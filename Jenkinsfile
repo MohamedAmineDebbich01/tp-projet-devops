@@ -14,8 +14,8 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/MohamedAmineDebbich01/tp-projet-devops
-'
+git branch: 'main', url: 'https://github.com/MohamedAmineDebbich01/tp-projet-devops.git'
+
             }
         }
 
@@ -36,7 +36,7 @@ pipeline {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
                     sh """
                         mvn sonar:sonar \
-                          -Dsonar.projectKey=tp-projet-amineDebbich \
+                          -Dsonar.projectKey=tp-projet-AmineDebbich \
                           -Dsonar.projectName='TP Projet 2025 - AmineDebbich'
                     """
                 }
