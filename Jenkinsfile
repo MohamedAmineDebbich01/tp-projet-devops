@@ -2,20 +2,20 @@ pipeline {
     agent any
 
     tools {
-        jdk 'JAVA_HOME'
-        maven 'M2_HOME'
+        jdk 'JAVA_HOME'      // Nom du JDK dans Manage Jenkins > Tools
+        maven 'M2_HOME'      // Nom de Maven dans Manage Jenkins > Tools
     }
 
     environment {
-        SONARQUBE_SERVER = 'sonarqube-server'
+        SONARQUBE_SERVER = 'sonarqube-server'   // Nom du serveur SonarQube dans Configure System
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-git branch: 'main', url: 'https://github.com/MohamedAmineDebbich01/tp-projet-devops.git'
-
+                // Récupère le code selon la config du job (SCM Git, branche master)
+                checkout scm
             }
         }
 
@@ -37,7 +37,7 @@ git branch: 'main', url: 'https://github.com/MohamedAmineDebbich01/tp-projet-dev
                     sh """
                         mvn sonar:sonar \
                           -Dsonar.projectKey=tp-projet-AmineDebbich \
-                          -Dsonar.projectName='TP Projet 2025 - AmineDebbich'
+                          -Dsonar.projectName='TP Projet 2025 - Amine Debbich'
                     """
                 }
             }
@@ -48,6 +48,15 @@ git branch: 'main', url: 'https://github.com/MohamedAmineDebbich01/tp-projet-dev
                 sh 'mvn package -DskipTests'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build + Tests (si présents) + Sonar + JAR : OK'
+        }
+        failure {
+            echo '❌ Échec du pipeline, vérifier la Console Output.'
         }
     }
 }
