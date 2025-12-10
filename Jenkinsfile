@@ -2,19 +2,19 @@ pipeline {
     agent any
 
     tools {
-        jdk 'JAVA_HOME'      // Nom du JDK dans Manage Jenkins > Tools
-        maven 'M2_HOME'      // Nom de Maven dans Manage Jenkins > Tools
+        jdk 'JAVA_HOME'     
+        maven 'M2_HOME'   
     }
 
     environment {
-        SONARQUBE_SERVER = 'sonarqube-server'   // Nom du serveur SonarQube dans Configure System
+        SONARQUBE_SERVER = 'sonarqube-server' 
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                // Récupère le code selon la config du job (SCM Git, branche master)
+               
                 checkout scm
             }
         }
