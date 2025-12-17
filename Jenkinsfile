@@ -35,12 +35,14 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_SERVER}") {
-                    sh """
-                        mvn sonar:sonar \
-                          -Dsonar.projectKey=tp-projet-AmineDebbich \
-                          -Dsonar.projectName='TP Projet 2025 - Amine Debbich'
-                    """
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                        sh """
+                            mvn sonar:sonar \
+                              -Dsonar.projectKey=tp-projet-AmineDebbich \
+                              -Dsonar.projectName='TP Projet 2025 - Amine Debbich'
+                        """
+                    }
                 }
             }
         }
@@ -80,7 +82,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Maven (Clean/Compile/Package) + Sonar + Docker Build + Docker Push : OK'
+            echo '✅ Maven + Sonar (non bloquant) + Docker Build + Docker Push : OK'
+        }
+        unstable {
+            echo '⚠️ SonarQube indisponible, mais le pipeline a continué.'
         }
         failure {
             echo '❌ Échec du pipeline, vérifier la Console Output.'
