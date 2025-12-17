@@ -16,21 +16,15 @@ pipeline {
     stages {
 
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Clean') {
-            steps {
-                sh 'mvn clean'
-            }
+            steps { sh 'mvn clean' }
         }
 
         stage('Compile') {
-            steps {
-                sh 'mvn compile'
-            }
+            steps { sh 'mvn compile' }
         }
 
         stage('SonarQube Analysis') {
@@ -65,33 +59,28 @@ pipeline {
 
         stage('Push Docker Image to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: "${DOCKER_CRED_ID}",
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh """
-                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        docker logout
-                    """
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    withCredentials([usernamePassword(
+                        credentialsId: "${DOCKER_CRED_ID}",
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh '''
+                            set -e
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            docker push '"$DOCKER_IMAGE"':'"$DOCKER_TAG"'
+                            docker logout
+                        '''
+                    }
                 }
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Maven + Sonar (non bloquant) + Docker Build + Docker Push : OK'
-        }
-        unstable {
-            echo '⚠️ SonarQube indisponible, mais le pipeline a continué.'
-        }
-        failure {
-            echo '❌ Échec du pipeline, vérifier la Console Output.'
-        }
-        always {
-            sh 'docker images | head -n 20 || true'
-        }
+        success  { echo '✅ Pipeline OK' }
+        unstable { echo '⚠️ Pipeline UNSTABLE (Sonar ou DockerHub indisponible), mais build continué.' }
+        failure  { echo '❌ Échec pipeline (erreur bloquante ailleurs).' }
+        always   { sh 'docker images | head -n 20 || true' }
     }
 }
